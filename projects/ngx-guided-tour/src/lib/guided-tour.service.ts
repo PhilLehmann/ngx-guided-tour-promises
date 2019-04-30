@@ -39,29 +39,29 @@ export class GuidedTourService {
         });
     }
 
-    public nextStep(): void {
+    public async nextStep(): void {
         if (this._currentTour.steps[this._currentTourStepIndex].closeAction) {
-            this._currentTour.steps[this._currentTourStepIndex].closeAction();
+            const result = this._currentTour.steps[this._currentTourStepIndex].closeAction();
+            if(result && result.then) {
+                await result;
+            }
         }
         if (this._currentTour.steps[this._currentTourStepIndex + 1]) {
             this._currentTourStepIndex++;
             this._setFirstAndLast();
             if (this._currentTour.steps[this._currentTourStepIndex].action) {
-                this._currentTour.steps[this._currentTourStepIndex].action();
-                // Usually an action is opening something so we need to give it time to render.
-                setTimeout(() => {
-                    if (this._checkSelectorValidity()) {
-                        this._guidedTourCurrentStepSubject.next(this.getPreparedTourStep(this._currentTourStepIndex));
-                    } else {
-                        this.nextStep();
-                    }
-                });
-            } else {
-                if (this._checkSelectorValidity()) {
-                    this._guidedTourCurrentStepSubject.next(this.getPreparedTourStep(this._currentTourStepIndex));
+                const result = this._currentTour.steps[this._currentTourStepIndex].action();
+                if(result && result.then) {
+                    await result;
                 } else {
-                    this.nextStep();
+                    // Usually an action is opening something; even if it's not a promise, let's give it time to render
+                    await new Promise(resolve => setTimeout(resolve));
                 }
+            }
+            if (this._checkSelectorValidity()) {
+                this._guidedTourCurrentStepSubject.next(this.getPreparedTourStep(this._currentTourStepIndex));
+            } else {
+                this.nextStep();
             }
         } else {
             if (this._currentTour.completeCallback) {
@@ -71,28 +71,29 @@ export class GuidedTourService {
         }
     }
 
-    public backStep(): void {
+    public async backStep(): void {
         if (this._currentTour.steps[this._currentTourStepIndex].closeAction) {
-            this._currentTour.steps[this._currentTourStepIndex].closeAction();
+            const result = this._currentTour.steps[this._currentTourStepIndex].closeAction();
+            if(result && result.then) {
+                await result;
+            }
         }
         if (this._currentTour.steps[this._currentTourStepIndex - 1]) {
             this._currentTourStepIndex--;
-            this._setFirstAndLast();
+            this._setFirstAndLast();            
             if (this._currentTour.steps[this._currentTourStepIndex].action) {
-                this._currentTour.steps[this._currentTourStepIndex].action();
-                setTimeout(() => {
-                    if (this._checkSelectorValidity()) {
-                        this._guidedTourCurrentStepSubject.next(this.getPreparedTourStep(this._currentTourStepIndex));
-                    } else {
-                        this.backStep();
-                    }
-                });
-            } else {
-                if (this._checkSelectorValidity()) {
-                    this._guidedTourCurrentStepSubject.next(this.getPreparedTourStep(this._currentTourStepIndex));
+                const result = this._currentTour.steps[this._currentTourStepIndex].action();
+                if(result && result.then) {
+                    await result;
                 } else {
-                    this.backStep();
+                    // Usually an action is opening something; even if it's not a promise, let's give it time to render
+                    await new Promise(resolve => setTimeout(resolve));
                 }
+            }
+            if (this._checkSelectorValidity()) {
+                this._guidedTourCurrentStepSubject.next(this.getPreparedTourStep(this._currentTourStepIndex));
+            } else {
+                this.backStep();
             }
         } else {
             this.resetTour();
@@ -113,7 +114,7 @@ export class GuidedTourService {
         this._guidedTourCurrentStepSubject.next(null);
     }
 
-    public startTour(tour: GuidedTour): void {
+    public async startTour(tour: GuidedTour): void {
         this._currentTour = cloneDeep(tour);
         this._currentTour.steps = this._currentTour.steps.filter(step => !step.skipStep);
         this._currentTourStepIndex = 0;
@@ -128,7 +129,13 @@ export class GuidedTourService {
                 document.body.classList.add('tour-open');
             }
             if (this._currentTour.steps[this._currentTourStepIndex].action) {
-                this._currentTour.steps[this._currentTourStepIndex].action();
+                const result = this._currentTour.steps[this._currentTourStepIndex].action();
+                if(result && result.then) {
+                    await result;
+                } else {
+                    // Usually an action is opening something; even if it's not a promise, let's give it time to render
+                    await new Promise(resolve => setTimeout(resolve));
+                }
             }
             if (this._checkSelectorValidity()) {
                 this._guidedTourCurrentStepSubject.next(this.getPreparedTourStep(this._currentTourStepIndex));
