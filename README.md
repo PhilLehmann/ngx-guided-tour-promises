@@ -53,9 +53,9 @@ interface TourStep {
     /** Where the tour step will appear next to the selected element */
     orientation?: Orientation | OrientationConfiguration[];
     /** Action that happens when the step is opened */
-    action?: () => void;
+    action?: () => Promise | void;
     /** Action that happens when the step is closed */
-    closeAction?: () => void;
+    closeAction?: () => Promise | void;
     /** Skips this step, this is so you do not have create multiple tour configurations based on user settings/permissions */
     skipStep?: boolean;
     /** Adds some padding for things like sticky headers when scrolling to an element */
@@ -91,9 +91,9 @@ content - Content of the tourstep. Uses inner html so tags will work.
 
 orientation (optional) - Defaults to top. Accepts bottom, bottomLeft, bottomRight, center, left, right, top, topLeft, and topRight. Can be taken from the guided-tour.constants.ts file. This also supports a array of OrientationConfiguration. When an array of OrientationConfiguration is passed to it, it will use the smallest maximumSize the screen can fit into. This is useful for tablet or mobile flexing. It will also change when the user resizes the screen.
 
-action (optional) - Function called at the beginning of step. This is executed before the tour step is rendered allowing for content to appear.
+action (optional) - Function called at the beginning of step. This is executed before the tour step is rendered allowing for content to appear. Return a promise to let ngx-guided-tour wait until it is being fulfilled before continuing.
 
-closeAction (optional) - Function called after step is ended.
+closeAction (optional) - Function called after step is ended. Return a promise to let ngx-guided-tour wait until it is being fulfilled before continuing.
 
 scrollAdjustment (optional) - Number used to adjust where to scroll to on a step and when to scroll.
 
