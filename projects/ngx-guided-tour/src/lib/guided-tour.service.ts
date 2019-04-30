@@ -39,7 +39,7 @@ export class GuidedTourService {
         });
     }
 
-    public async nextStep(): void {
+    public async nextStep(): Promise<void> {
         if (this._currentTour.steps[this._currentTourStepIndex].closeAction) {
             const result = this._currentTour.steps[this._currentTourStepIndex].closeAction();
             if(result && result.then) {
@@ -71,7 +71,7 @@ export class GuidedTourService {
         }
     }
 
-    public async backStep(): void {
+    public async backStep(): Promise<void> {
         if (this._currentTour.steps[this._currentTourStepIndex].closeAction) {
             const result = this._currentTour.steps[this._currentTourStepIndex].closeAction();
             if(result && result.then) {
@@ -114,7 +114,7 @@ export class GuidedTourService {
         this._guidedTourCurrentStepSubject.next(null);
     }
 
-    public async startTour(tour: GuidedTour): void {
+    public async startTour(tour: GuidedTour): Promise<void> {
         this._currentTour = cloneDeep(tour);
         this._currentTour.steps = this._currentTour.steps.filter(step => !step.skipStep);
         this._currentTourStepIndex = 0;
